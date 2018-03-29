@@ -42,7 +42,6 @@ function getMovieInfo(name) {
                 console.log(`RT rating: ${movieInfo.Ratings[1].Value}`);
             } catch (err) {
                 console.log('Rating unavailable.');
-                FS.appendFileSync('log.txt', `OMDB response error: ${err}\n`);
             }
             logIt('success!');
         }

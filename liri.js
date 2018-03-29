@@ -2,10 +2,24 @@ require("dotenv").config();
 
 const KEYS = require('./keys.js');
 const FS = require('fs');
+const REQUEST = require('request');
+const TWITTER = require('twitter');
+const SPOTIFY = require('node-spotify-api');
+
 const COMMAND = process.argv[2];
 
 runCommand(COMMAND, input());
 
+function runCommand(command, name) {
+    logIt(command, name);
+    switch (command) {
+        case 'movie-this': getMovieInfo(name); break;
+        case 'my-tweets': getMyTweets(); break;
+        case 'spotify-this-song': spotifySong(name); break;
+        case 'do-what-it-says': getWhatItSays(); break;
+        default: console.log('Invalid command!'); break;
+    }
+}
 function input() {
     let name = process.argv[3];
     if (process.argv.length > 4) {
@@ -19,14 +33,11 @@ function getMovieInfo(name) {
     if (name == undefined) {
         name = 'Mr.Nobody';
     }
-    const REQUEST = require('request');
-    FS.appendFileSync('log.txt', `${timeStamp()} -movie-this- ${name}\n`);
     const url = 'http://www.omdbapi.com/?t=' + name + '&r=json&apikey=' + KEYS.omdb.key;
-
     REQUEST(url, (error, response, body) => {
         if (error || response.statusCode != 200) {
             console.log(`Sorry can't retrieve data, please try again later...`);
-            FS.appendFile('log.txt', `ERROR: ${error}\nRESPONSE: ${response.statusCode} ${JSON.parse(body).error}\n`);
+            logIt('error-',response.statusCode,JSON.parse(body).error);
         } else {
             let movieInfo = JSON.parse(body);
             console.log(`\nTITLE: ${movieInfo.Title}`);
@@ -42,25 +53,23 @@ function getMovieInfo(name) {
                 console.log('Rating unavailable.');
                 FS.appendFileSync('log.txt', `OMDB response error: ${err}\n`);
             }
-            FS.appendFileSync('log.txt', `Success!\n`);
+            logIt('success!');
         }
     });
 }
 function getMyTweets() {
-    const TWITTER = require('twitter');
     const CLIENT = new TWITTER(KEYS.twitter);
-    FS.appendFileSync('log.txt', `${timeStamp()} -my-tweets- loading tweets...\n`);
-    CLIENT.get('statuses/user_timeline', { q: 'node.js' }, (error, tweets, response)=>{
+    CLIENT.get('statuses/user_timeline', { count: 20 }, (error, tweets, response)=>{
         if (error) {
             console.log('Something went wrong with Twitter...');
             error.map((err) => {
-                FS.appendFileSync('log.txt', `ERROR: ${err.message}\n`);
+                logIt('error-', err.message);
             });
         } else {
             tweets.map((tw) => {
                 console.log(`${tw.created_at}\n${tw.user.name}: ${tw.text}\n`);
             });
-            FS.appendFileSync('log.txt', 'Success!\n');
+            logIt('success!');
         }
     });
 }
@@ -68,13 +77,11 @@ function spotifySong(name) {
     if(name == undefined){
         name = 'The+Sign+Ace+of+Base';
     }
-    const SPOTIFY = require('node-spotify-api');
     const spotify = new SPOTIFY(KEYS.spotify);
-    FS.appendFileSync('log.txt', `${timeStamp()} -spotify-this-song- ${name}\n`);
     spotify.search({ type: 'track', query: name, limit:'1'}, function (err, data) {
         if (err) {
             console.log('Something went wrong with Spotify...');
-            FS.appendFileSync('log.txt',`ERROR: ${err}\n`);
+            logIt('error-', err);
         } else {
             let Track = data.tracks.items[0];
             console.log('ARTIST/s: ');
@@ -84,22 +91,20 @@ function spotifySong(name) {
             console.log(`TRACK: ${Track.name}`);
             console.log(`ALBUM: ${Track.album.name}`);
             console.log(`LINK:  ${Track.external_urls.spotify}`);
-            FS.appendFileSync('log.txt', 'Success!\n');
+            logIt('success!');
         }
     });
     //TODO get spotify keys, set up api calls, log needed info into console and log.txt
 }
 function getWhatItSays() {
-    FS.appendFileSync('log.txt', `${timeStamp()} -do-what-it-says- reading file...\n`)
     FS.readFile('random.txt', 'utf8', (err, data) => {
         if (err) {
             console.log('Something went wrong with file...');
-            FS.appendFileSync('log.txt', `ERROR: ${err.message}\n`);
+            logIt('error-',err.message);
         } else {
-            FS.appendFileSync('log.txt', `Success!\n`);
             var dataArr = data.split(',');
             if (dataArr[0] === 'do-what-it-says') {
-                console.log("I ain't gonna loop!");
+                console.log("Are you trying to trick me?");
             } else {
                 runCommand(dataArr[0], dataArr[1]);
             }
@@ -110,12 +115,6 @@ function timeStamp() {
     const time = new Date;
     return '@' + time.toDateString() + '/' + time.toLocaleTimeString();
 }
-function runCommand(command, name) {
-    switch (command) {
-        case 'movie-this': getMovieInfo(name); break;
-        case 'my-tweets': getMyTweets(); break;
-        case 'spotify-this-song': spotifySong(name); break;
-        case 'do-what-it-says': getWhatItSays(); break;
-        default: console.log('Invalid command!'); break;
-    }
+function logIt(...arg){
+    FS.appendFileSync('log.txt', `${timeStamp()} -${arg}\n`);
 }

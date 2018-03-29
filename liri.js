@@ -68,7 +68,7 @@ function spotifySong(name) {
         name = 'The+Sign+Ace+of+Base';
     }
     const spotify = new SPOTIFY(KEYS.spotify);
-    spotify.search({ type: 'track', query: name, limit:'1'}, function (err, data) {
+    spotify.search({ type: 'track', query: name, limit:'1'}, (err, data)=> {
         if (err) {
             console.log('Something went wrong with Spotify...');
             logIt('error-', err);

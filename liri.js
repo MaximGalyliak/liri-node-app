@@ -20,15 +20,6 @@ function runCommand(command, name) {
         default: console.log('Invalid command!'); break;
     }
 }
-function input() {
-    let name = process.argv[3];
-    if (process.argv.length > 4) {
-        for (var i = 4; i < process.argv.length; i++) {
-            name += ' ' + process.argv[i];
-        }
-    }
-    return name;
-}
 function getMovieInfo(name) {
     if (name == undefined) {
         name = 'Mr.Nobody';
@@ -110,6 +101,16 @@ function getWhatItSays() {
             }
         }
     });
+}
+//utils
+function input() {
+    let name = process.argv[3];
+    if (process.argv.length > 4) {
+        for (var i = 4; i < process.argv.length; i++) {
+            name += ' ' + process.argv[i];
+        }
+    }
+    return name;
 }
 function timeStamp() {
     const time = new Date;

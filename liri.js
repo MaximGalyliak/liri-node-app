@@ -9,7 +9,7 @@ const SPOTIFY = require('node-spotify-api');
 const COMMAND = process.argv[2];
 
 runCommand(COMMAND, input());
-
+ 
 function runCommand(command, name) {
     logIt(command, name);
     switch (command) {
@@ -28,7 +28,7 @@ function getMovieInfo(name) {
     REQUEST(url, (error, response, body) => {
         if (error || response.statusCode != 200) {
             console.log(`Sorry can't retrieve data, please try again later...`);
-            logIt('error-',response.statusCode,JSON.parse(body).error);
+            logIt('error-', response.statusCode, JSON.parse(body).error);
         } else {
             let movieInfo = JSON.parse(body);
             console.log(`\nTITLE: ${movieInfo.Title}`);
@@ -49,7 +49,7 @@ function getMovieInfo(name) {
 }
 function getMyTweets() {
     const CLIENT = new TWITTER(KEYS.twitter);
-    CLIENT.get('statuses/user_timeline', { count: 20 }, (error, tweets, response)=>{
+    CLIENT.get('statuses/user_timeline', { count: 20 }, (error, tweets, response) => {
         if (error) {
             console.log('Something went wrong with Twitter...');
             error.map((err) => {
@@ -64,18 +64,18 @@ function getMyTweets() {
     });
 }
 function spotifySong(name) {
-    if(name == undefined){
+    if (name == undefined) {
         name = 'The+Sign+Ace+of+Base';
     }
     const spotify = new SPOTIFY(KEYS.spotify);
-    spotify.search({ type: 'track', query: name, limit:'1'}, (err, data)=> {
+    spotify.search({ type: 'track', query: name, limit: '1' }, (err, data) => {
         if (err) {
             console.log('Something went wrong with Spotify...');
             logIt('error-', err);
         } else {
             let Track = data.tracks.items[0];
             console.log('ARTIST/s: ');
-            Track.artists.map((artist)=>{
+            Track.artists.map((artist) => {
                 console.log(`-${artist.name}`);
             });
             console.log(`TRACK: ${Track.name}`);
@@ -90,7 +90,7 @@ function getWhatItSays() {
     FS.readFile('random.txt', 'utf8', (err, data) => {
         if (err) {
             console.log('Something went wrong with file...');
-            logIt('error-',err.message);
+            logIt('error-', err.message);
         } else {
             var dataArr = data.split(',');
             if (dataArr[0] === 'do-what-it-says') {
@@ -115,6 +115,6 @@ function timeStamp() {
     const time = new Date;
     return '@' + time.toDateString() + '/' + time.toLocaleTimeString();
 }
-function logIt(...arg){
+function logIt(...arg) {
     FS.appendFileSync('log.txt', `${timeStamp()} -${arg}\n`);
 }
